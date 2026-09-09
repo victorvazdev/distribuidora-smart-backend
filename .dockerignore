@@ -1,0 +1,16 @@
+# macOS files
+.DS_Store
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Development environment configurations
+.vscode/
+.venv/
+venv/
+
+# Other
+database/
