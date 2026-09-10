@@ -13,31 +13,42 @@ product_tag = Tag(name='product', description='Gerenciamento de produtos.')
 product_bp = APIBlueprint('product', __name__, abp_tags=[product_tag])
 
 
-@product_bp.post('/product', tags=[product_tag], responses={'201': ProductSchema, '409': ErrorSchema, '400': ErrorSchema})
+@product_bp.post('/product', tags=[product_tag], responses={'201': ProductSchema, '400': ErrorSchema})
 def add_product(form: ProductSchema):
     '''Cadastra um novo produto no estoque.
     
     Adiciona o produto com seus respectivos dados de nome, código de barras, 
     quantidade e valor no banco de dados.
+    Caso o produto já exista no estoque, somente a quantidade é adicionada no produto existente de acordo com o valor informado na requisição.
     '''
     session = Session()
 
     try:
-        product = Product(
-            name=form.name,
-            barcode=form.barcode,
-            quantity=form.quantity,
-            value=form.value,
-            image_url=form.image_url
-        )
+        existing_product = session.query(Product).filter(Product.barcode == form.barcode).first()
 
-        session.add(product)
-        session.commit()
-        return display_product(product), 201
+        if existing_product:
+            # Tratamento de segurança caso o form ou o banco tenham quantidade vazia
+            add_qty = form.quantity if form.quantity is not None else 0
+            current_qty = existing_product.quantity if existing_product.quantity is not None else 0
+            
+            # Atualiza o estoque
+            existing_product.quantity = current_qty + add_qty
+            
+            session.commit()
+            return display_product(existing_product), 200
+        else:
+            product = Product(
+                name=form.name,
+                barcode=form.barcode,
+                quantity=form.quantity,
+                value=form.value,
+                image_url=form.image_url
+            )
+
+            session.add(product)
+            session.commit()
+            return display_product(product), 201
     
-    except IntegrityError:
-        session.rollback()
-        return {'message': f'Já existe um produto cadastrado com o código de barras {form.barcode}.'}, 409
     except Exception as e:
         session.rollback()
         return {'message': str(e)}, 400
