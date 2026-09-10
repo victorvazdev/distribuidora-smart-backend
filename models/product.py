@@ -16,7 +16,7 @@ class Product(Base):
 
     id = Column('pk_product', Integer, primary_key=True)
     name = Column(String(100))
-    barcode = Column(String(100), unique=True)
+    barcode = Column(String(100), unique=True, nullable=True)
     quantity = Column(Integer)
     value = Column(Float)
     image_url = Column(String(255), nullable=True)

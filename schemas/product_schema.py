@@ -8,12 +8,12 @@ class ProductSchema(BaseModel):
     '''Define como um novo produto deve ser representado para inserção no banco de dados.
     '''
     name: str = Field('AGUA MIN CRYSTAL S/GAS 500ML', description='Nome do produto.')
-    barcode: str = Field('7894900530001', description='Código de barras do produto.')
+    barcode: Optional[str] = Field('7894900530001', description='Código de barras do produto.')
     quantity: Optional[int] = Field(12, description='Quantidade disponível no estoque.')
     value: float = Field(2.50, description='Preço do produto.')
-    image_url: str = Field('https://images.openfoodfacts.org/images/products/789/490/053/0001/front_pt.30.400.jpg', description='URL da imagem do produto.')
+    image_url: Optional[str] = Field('https://images.openfoodfacts.org/images/products/789/490/053/0001/front_pt.30.400.jpg', description='URL da imagem do produto.')
 
-    @field_validator('name', 'barcode', mode='before')
+    @field_validator('name', 'barcode', 'image_url', mode='before')
     @classmethod
     def format_string_fields(cls, value):
         '''Converte vazios/null para None, e números para string.'''
@@ -32,13 +32,21 @@ class ProductSchema(BaseModel):
         return value
 
 
+class PaginationQuerySchema(BaseModel):
+    '''Define os parâmetros de paginação via URL (Query String).'''
+    page: int = Field(1, description="Número da página atual")
+    limit: int = Field(10, description="Quantidade de itens por página")
+
+
 class ProductListSchema(BaseModel):
-    '''Define como uma listagem de vários produtos será retornada pela API.
-    '''
+    '''Define como uma listagem de vários produtos será retornada pela API.'''
     products: List[ProductSchema]
+    total_items: int = Field(description="Total de produtos no banco")
+    total_pages: int = Field(description="Total de páginas disponíveis")
+    current_page: int = Field(description="Página atual")
 
 
-class ProductSearchSchema(BaseModel):
+class ProductSearchSchema(PaginationQuerySchema):
     '''Define a estrutura para busca parcial por nome ou código de barras.'''
     name: Optional[str] = Field(None, description='Nome parcial ou completo do produto.')
     barcode: Optional[str] = Field(None, description='Código de barras parcial ou completo.')
@@ -70,7 +78,7 @@ class ProductUpdateSchema(BaseModel):
     value: Optional[float] = Field(None, description='Novo preço do produto.')
     image_url: Optional[str] = Field(None, description='Nova url da imagem do produto.')
 
-    @field_validator('name', 'barcode', mode='before')
+    @field_validator('name', 'barcode', 'image_url', mode='before')
     @classmethod
     def format_string_fields(cls, value):
         '''Converte vazios/null para None, e números para string.'''
@@ -102,20 +110,22 @@ def display_product(product: Product):
     }
 
 
-def display_product_list(products: List[Product]):
+def display_product_list(products: List[Product], total_items: int, total_pages: int, current_page: int):
     '''Retorna uma representação em dicionário de uma lista de objetos Product, 
-    formatando cada um para exibição adequada.
+    formatando cada um para exibição adequada e utiliznado metadados de paginação.
     '''
-    product_list = []
+    product_list = [{
+        'id': p.id,
+        'name': p.name,
+        'barcode': p.barcode,
+        'quantity': p.quantity,
+        'value': p.value,
+        'image_url': p.image_url
+    } for p in products]
 
-    for product in products:
-        product_list.append({
-            'id': product.id,
-            'name': product.name,
-            'barcode': product.barcode,
-            'quantity': product.quantity,
-            'value': product.value,
-            'image_url': product.image_url
-        })
-
-    return {'products': product_list}
+    return {
+        'products': product_list,
+        'total_items': total_items,
+        'total_pages': total_pages,
+        'current_page': current_page
+    }

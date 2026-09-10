@@ -96,6 +96,7 @@ Para testar as rotas e ver a documentação interativa (independente de usar Doc
 http://localhost:8000/openapi/swagger
 
 ## Estrutura do Projeto
+```text
 .
 ├── app.py
 ├── Dockerfile
@@ -112,3 +113,4 @@ http://localhost:8000/openapi/swagger
     ├── __init__.py
     ├── error_schema.py
     └── product_schema.py
+````

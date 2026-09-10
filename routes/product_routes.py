@@ -1,3 +1,5 @@
+import math
+
 from flask_openapi3 import APIBlueprint, Tag
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
@@ -44,7 +46,7 @@ def add_product(form: ProductSchema):
 
 
 @product_bp.get('/products', tags=[product_tag], responses={'200': ProductListSchema, '404': ErrorSchema})
-def get_products():
+def get_products(query: PaginationQuerySchema):
     '''Lista todos os produtos cadastrados no estoque.
     
     Retorna os detalhes de todos os produtos registrados. 
@@ -52,12 +54,16 @@ def get_products():
     '''
     session = Session()
     try:
-        products = session.query(Product).all()
+        total_items = session.query(Product).count()
+        total_pages = math.ceil(total_items / query.limit) if total_items > 0 else 1
+        
+        offset = (query.page - 1) * query.limit
+        products = session.query(Product).limit(query.limit).offset(offset).all()
 
         if not products:
             return {'products': []}, 200
         else:
-            return display_product_list(products), 200
+            return display_product_list(products, total_items, total_pages, query.page), 200
     finally:
         session.close()
 
@@ -79,16 +85,19 @@ def search_products(query: ProductSearchSchema):
             filters.append(Product.barcode.ilike(f'%{query.barcode}%'))
 
         db_query = session.query(Product)
-        
-        if filters:
-            db_query = db_query.filter(or_(*filters))
 
-        products = db_query.all()
+        if filters:
+                    db_query = db_query.filter(or_(*filters))
+        
+        total_items = db_query.count()
+        total_pages = math.ceil(total_items / query.limit) if total_items > 0 else 1
+        offset = (query.page - 1) * query.limit
+        products = db_query.limit(query.limit).offset(offset).all()
 
         if not products:
             return {'products': []}, 200
         
-        return display_product_list(products), 200
+        return display_product_list(products, total_items, total_pages, query.page), 200
     finally:
         session.close()
 
