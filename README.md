@@ -1,4 +1,4 @@
-# Smart Stock Backend
+# Distribuidora Smart Backend
 
 Uma API RESTful desenvolvida em Python para o gerenciamento de estoque de produtos de uma distribuidora. Este projeto permite o cadastro, consulta, atualização e remoção de produtos no estoque, garantindo a integridade dos dados através de um banco de dados relacional.
 
@@ -51,7 +51,7 @@ python --version
 1. Clone o repositório:
 
 ```bash
-git clone https://github.com/victorvazdev/smart-stock-backend.git
+git clone https://github.com/victorvazdev/distribuidora-smart-backend.git
 cd distribuidora-smart-backend
 ```
 
