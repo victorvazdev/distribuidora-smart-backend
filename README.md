@@ -19,7 +19,7 @@ A maneira mais fácil e isolada de rodar o projeto é utilizando o Docker. Certi
 
 1. Faça o clone do repositório e acesse a pasta do projeto:
 ```bash
-git clone [https://github.com/victorvazdev/distribuidora-smart-backend](https://github.com/victorvazdev/distribuidora-smart-backend)
+git clone https://github.com/victorvazdev/distribuidora-smart-backend.git
 cd distribuidora-smart-backend
 ```
 
