@@ -51,7 +51,7 @@ python --version
 1. Clone o repositório:
 
 ```bash
-git clone [https://github.com/victorvazdev/distribuidora-smart-backend](https://github.com/victorvazdev/distribuidora-smart-backend)
+git clone https://github.com/victorvazdev/smart-stock-backend.git
 cd distribuidora-smart-backend
 ```
 
